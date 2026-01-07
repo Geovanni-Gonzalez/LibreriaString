@@ -1,0 +1,30 @@
+{
+    "project": "Librería String C++",
+    "tech": [
+        "C++",
+        "OOP",
+        "Algorithm Design"
+    ],
+    "features": [
+        "Custom String Manipulation Class",
+        "Advanced Substring Searching",
+        "Dynamic Memory Management",
+        "Operator Overloading",
+        "Efficiency Optimized String Operations"
+    ],
+    "stack": {
+        "language": "C++",
+        "framework": "Native C++ Lib",
+        "tools": [
+            "G++",
+            "STL-like Implementation",
+            "Git"
+        ],
+        "database": "None (Header-only/Library)"
+    },
+    "screenshots": [],
+    "description": {
+        "es": "Clase especializada en el lenguaje C++ que permite el manejo avanzado de cadenas de caracteres, optimizada para rendimiento y facilidad de uso.",
+        "en": "Specialized C++ class for advanced string manipulation, optimized for performance and ease of use."
+    }
+}
