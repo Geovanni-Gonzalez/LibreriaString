@@ -1,12 +1,12 @@
 #include "String.hpp"
-#include <fstream> // Allowed for file I/O? "Solo se permiten estructuras dinámicas lineales creadas por el equipo... Queda prohibido el uso de la librería string.h". 
-// Prompt says: "Solo se permiten librerías vistas en clase". Usually iostream/fstream are standard. I will assume they are allowed.
-#include <iostream> 
+#include <fstream>
+#include <iostream>
+#include <algorithm> // for std::max
 
 // Helper: Calculate length
-int String::calculateLength(const char* str) const {
+std::size_t String::calculateLength(const char* str) const {
     if (!str) return 0;
-    int len = 0;
+    std::size_t len = 0;
     while (str[len] != '\0') {
         len++;
     }
@@ -16,7 +16,7 @@ int String::calculateLength(const char* str) const {
 // Helper: Copy string
 void String::copyString(char* dest, const char* src) const {
     if (!dest || !src) return;
-    int i = 0;
+    std::size_t i = 0;
     while (src[i] != '\0') {
         dest[i] = src[i];
         i++;
@@ -24,14 +24,41 @@ void String::copyString(char* dest, const char* src) const {
     dest[i] = '\0';
 }
 
+// Internal reallocation logic
+void String::ensureCapacity(std::size_t newCap) {
+    if (newCap <= capacity && data != nullptr) return;
+    
+    // Growth strategy: double or exact if very large
+    std::size_t nextCap = (capacity == 0) ? newCap : capacity * 2;
+    if (nextCap < newCap) nextCap = newCap;
+
+    char* newData = new char[nextCap + 1];
+    if (data) {
+        // Use manual copy for safety
+        std::size_t i = 0;
+        while (i < length && data[i] != '\0') {
+            newData[i] = data[i];
+            i++;
+        }
+        newData[i] = '\0';
+        delete[] data;
+    } else {
+        newData[0] = '\0';
+    }
+    data = newData;
+    capacity = nextCap;
+}
+
 // Constructor
 String::String(const char* str) {
     if (str) {
         length = calculateLength(str);
-        data = new char[length + 1];
+        capacity = length;
+        data = new char[capacity + 1];
         copyString(data, str);
     } else {
         length = 0;
+        capacity = 0;
         data = new char[1];
         data[0] = '\0';
     }
@@ -40,8 +67,20 @@ String::String(const char* str) {
 // Copy Constructor
 String::String(const String& other) {
     length = other.length;
-    data = new char[length + 1];
+    capacity = other.length;
+    data = new char[capacity + 1];
     copyString(data, other.data);
+}
+
+// Move Constructor
+String::String(String&& other) noexcept {
+    data = other.data;
+    length = other.length;
+    capacity = other.capacity;
+    
+    other.data = nullptr;
+    other.length = 0;
+    other.capacity = 0;
 }
 
 // Destructor
@@ -52,26 +91,40 @@ String::~String() {
 // Assignment Operator
 String& String::operator=(const String& other) {
     if (this != &other) {
-        delete[] data; // Free existing
+        ensureCapacity(other.length);
         length = other.length;
-        data = new char[length + 1];
         copyString(data, other.data);
+    }
+    return *this;
+}
+
+// Move Assignment
+String& String::operator=(String&& other) noexcept {
+    if (this != &other) {
+        delete[] data;
+        data = other.data;
+        length = other.length;
+        capacity = other.capacity;
+        
+        other.data = nullptr;
+        other.length = 0;
+        other.capacity = 0;
     }
     return *this;
 }
 
 // caracterEn
 char String::caracterEn(int index) const {
-    if (index >= 0 && index < length) {
+    if (index >= 0 && (std::size_t)index < length) {
         return data[index];
     }
-    return '\0'; // Return null char if invalid
+    return '\0';
 }
 
 // contarCaracter
 int String::contarCaracter(char c) const {
     int count = 0;
-    for (int i = 0; i < length; i++) {
+    for (std::size_t i = 0; i < length; i++) {
         if (data[i] == c) {
             count++;
         }
@@ -81,84 +134,181 @@ int String::contarCaracter(char c) const {
 
 // ultimoIndice
 int String::ultimoIndice(char c) const {
-    for (int i = length - 1; i >= 0; i--) {
+    if (length == 0) return -1;
+    for (int i = (int)length - 1; i >= 0; i--) {
         if (data[i] == c) {
             return i;
         }
     }
-    return -1; // Not found
+    return -1;
 }
 
 // cambiarCadena
 void String::cambiarCadena(const char* nueva) {
-    delete[] data;
+    std::size_t newLen = calculateLength(nueva);
+    ensureCapacity(newLen);
     if (nueva) {
-        length = calculateLength(nueva);
-        data = new char[length + 1];
         copyString(data, nueva);
+        length = newLen;
     } else {
         length = 0;
-        data = new char[1];
-        data[0] = '\0';
+        if (data) data[0] = '\0';
     }
 }
 
 // len
-int String::len() const {
+std::size_t String::len() const {
     return length;
 }
 
-// equals (method)
+// equals
 bool String::equals(const String& other) const {
     if (length != other.length) return false;
-    for (int i = 0; i < length; i++) {
+    for (std::size_t i = 0; i < length; i++) {
         if (data[i] != other.data[i]) return false;
     }
     return true;
 }
 
-// operator ==
+// Operators
 bool String::operator==(const String& other) const {
     return equals(other);
+}
+
+bool String::operator!=(const String& other) const {
+    return !(*this == other);
+}
+
+char& String::operator[](std::size_t index) {
+    return data[index];
+}
+
+const char& String::operator[](std::size_t index) const {
+    return data[index];
+}
+
+String& String::operator+=(const String& other) {
+    concatenar(other);
+    return *this;
+}
+
+String String::operator+(const String& other) const {
+    String res(*this);
+    res.concatenar(other);
+    return res;
+}
+
+// New Utilities
+void String::toUpperCase() {
+    for (std::size_t i = 0; i < length; i++) {
+        if (data[i] >= 'a' && data[i] <= 'z') {
+            data[i] -= 32;
+        }
+    }
+}
+
+void String::toLowerCase() {
+    for (std::size_t i = 0; i < length; i++) {
+        if (data[i] >= 'A' && data[i] <= 'Z') {
+            data[i] += 32;
+        }
+    }
+}
+
+void String::trim() {
+    if (length == 0) return;
+    std::size_t start = 0;
+    while (start < length && (data[start] == ' ' || data[start] == '\t' || data[start] == '\n' || data[start] == '\r')) {
+        start++;
+    }
+    if (start == length) {
+        length = 0;
+        data[0] = '\0';
+        return;
+    }
+    std::size_t end = length - 1;
+    while (end > start && (data[end] == ' ' || data[end] == '\t' || data[end] == '\n' || data[end] == '\r')) {
+        end--;
+    }
+    
+    std::size_t newLen = end - start + 1;
+    for (std::size_t i = 0; i < newLen; i++) {
+        data[i] = data[start + i];
+    }
+    data[newLen] = '\0';
+    length = newLen;
+}
+
+int String::find(const char* sub) const {
+    if (!sub) return -1;
+    std::size_t subLen = calculateLength(sub);
+    if (subLen == 0) return 0;
+    if (subLen > length) return -1;
+
+    for (std::size_t i = 0; i <= length - subLen; i++) {
+        bool match = true;
+        for (std::size_t j = 0; j < subLen; j++) {
+            if (data[i + j] != sub[j]) {
+                match = false;
+                break;
+            }
+        }
+        if (match) return (int)i;
+    }
+    return -1;
+}
+
+bool String::contains(const char* sub) const {
+    return find(sub) != -1;
+}
+
+bool String::startsWith(const char* prefix) const {
+    if (!prefix) return false;
+    std::size_t preLen = calculateLength(prefix);
+    if (preLen > length) return false;
+    for (std::size_t i = 0; i < preLen; i++) {
+        if (data[i] != prefix[i]) return false;
+    }
+    return true;
+}
+
+bool String::endsWith(const char* suffix) const {
+    if (!suffix) return false;
+    std::size_t sufLen = calculateLength(suffix);
+    if (sufLen > length) return false;
+    std::size_t offset = length - sufLen;
+    for (std::size_t i = 0; i < sufLen; i++) {
+        if (data[offset + i] != suffix[i]) return false;
+    }
+    return true;
 }
 
 // split
 String** String::split(char delimiter, int& outCount) const {
     outCount = 0;
-    // First pass: count parts
-    int parts = 1; // At least one part unless empty
-    if (length == 0) parts = 0;
-    else {
-        for (int i = 0; i < length; i++) {
-            if (data[i] == delimiter) parts++;
-        }
-    }
+    if (length == 0) return nullptr;
 
-    if (parts == 0) {
-        outCount = 0;
-        return nullptr;
+    int parts = 1;
+    for (std::size_t i = 0; i < length; i++) {
+        if (data[i] == delimiter) parts++;
     }
 
     String** result = new String*[parts];
-    
-    int start = 0;
+    std::size_t start = 0;
     int currentPart = 0;
-    for (int i = 0; i <= length; i++) {
-        if (data[i] == delimiter || data[i] == '\0') {
-            int partLen = i - start;
+    for (std::size_t i = 0; i <= length; i++) {
+        if (i == length || data[i] == delimiter) {
+            std::size_t partLen = i - start;
             char* buffer = new char[partLen + 1];
-            for (int j = 0; j < partLen; j++) {
+            for (std::size_t j = 0; j < partLen; j++) {
                 buffer[j] = data[start + j];
             }
             buffer[partLen] = '\0';
-            
-            result[currentPart] = new String(buffer);
+            result[currentPart++] = new String(buffer);
             delete[] buffer;
-            currentPart++;
             start = i + 1;
         }
     }
-    
     outCount = parts;
     return result;
 }
@@ -166,45 +316,41 @@ String** String::split(char delimiter, int& outCount) const {
 // concatenarEn
 void String::concatenarEn(const char* sub, int pos) {
     if (!sub) return;
-    
-    int subLen = calculateLength(sub);
-    
-    // Normalize index
+    std::size_t subLen = calculateLength(sub);
     if (pos < 0) pos = 0;
-    if (pos > length) pos = length;
+    if ((std::size_t)pos > length) pos = (int)length;
 
-    char* newData = new char[length + subLen + 1];
+    ensureCapacity(length + subLen);
     
-    // Copy first part
-    for (int i = 0; i < pos; i++) {
-        newData[i] = data[i];
+    // Shift right
+    for (int i = (int)length; i >= pos; i--) {
+        data[i + subLen] = data[i];
     }
-    // Copy sub
-    for (int i = 0; i < subLen; i++) {
-        newData[pos + i] = sub[i];
+    // Insert
+    for (std::size_t i = 0; i < subLen; i++) {
+        data[pos + i] = sub[i];
     }
-    // Copy rest
-    for (int i = pos; i < length; i++) {
-        newData[pos + subLen + (i - pos)] = data[i];
-    }
-    newData[length + subLen] = '\0';
-
-    delete[] data;
-    data = newData;
     length += subLen;
+    data[length] = '\0';
 }
 
-// concatenar (char*)
+// concatenar
 void String::concatenar(const char* other) {
-    concatenarEn(other, length);
+    if (!other) return;
+    std::size_t oLen = calculateLength(other);
+    ensureCapacity(length + oLen);
+    for (std::size_t i = 0; i < oLen; i++) {
+        data[length + i] = other[i];
+    }
+    length += oLen;
+    data[length] = '\0';
 }
 
-// concatenar (String)
 void String::concatenar(const String& other) {
     concatenar(other.data);
 }
 
-// concatenarCadenas (static)
+// static
 String String::concatenarCadenas(char** cadenas, int count) {
     String res("");
     for (int i = 0; i < count; i++) {
@@ -216,104 +362,67 @@ String String::concatenarCadenas(char** cadenas, int count) {
 // reemplazarEn
 void String::reemplazarEn(const char* sub, int pos) {
     if (!sub) return;
-    int subLen = calculateLength(sub);
-
-    // Prompt says: "Si sobrepasa el tamaño, se agregan los caracteres extra."
-    // Meaning we overwrite, and extend if necessary.
-
-    if (pos < 0) pos = 0; 
-    // If pos is beyond length, we treat it as append or fill with spaces?
-    // "Insertar una cadena es concatenarEn", this is "ReemplazarEn" aka Overwrite.
-    // Assuming pos is within [0, length]. If pos > length, maybe append? 
-    // Let's assume typical overwrite behavior starting at pos.
+    std::size_t subLen = calculateLength(sub);
+    if (pos < 0) pos = 0;
     
-    // Calculate new length required
-    int endPos = pos + subLen;
-    int newLength = (endPos > length) ? endPos : length;
+    std::size_t endPos = pos + subLen;
+    ensureCapacity(std::max(length, endPos));
     
-    // If we need to extend, reallocate
-    if (newLength > length) {
-        char* newData = new char[newLength + 1];
-        copyString(newData, data);
-        delete[] data;
-        data = newData;
-        length = newLength;
-    }
-    
-    // Overwrite
-    for (int i = 0; i < subLen; i++) {
+    for (std::size_t i = 0; i < subLen; i++) {
         data[pos + i] = sub[i];
     }
-    // Ensure null terminator if we extended
-    data[length] = '\0';
+    if (endPos > length) {
+        length = endPos;
+        data[length] = '\0';
+    }
 }
 
 // reemplazarOcurrencias
 void String::reemplazarOcurrencias(const char* oldSub, const char* newSub) {
     if (!oldSub || !newSub) return;
-    int oldLen = calculateLength(oldSub);
-    int newLen = calculateLength(newSub);
-    if (oldLen == 0) return; // infinite loop prevention
+    std::size_t oLen = calculateLength(oldSub);
+    std::size_t nLen = calculateLength(newSub);
+    if (oLen == 0) return;
 
-    // Quick implementation: repeatedly find and replace (not efficient but simple)
-    // Or build a new string. Building new string is safer.
+    String result("");
+    int lastIdx = 0;
+    int idx = find(oldSub);
     
-    // count occurrences
-    int count = 0;
-    int i = 0;
-    while (i <= length - oldLen) {
-        bool match = true;
-        for (int j = 0; j < oldLen; j++) {
-            if (data[i + j] != oldSub[j]) {
-                match = false;
-                break;
-            }
+    while (idx != -1) {
+        // Add part before match
+        for (int i = lastIdx; i < idx; i++) {
+            char temp[2] = {data[i], '\0'};
+            result.concatenar(temp);
         }
-        if (match) {
-            count++;
-            i += oldLen;
-        } else {
-            i++;
-        }
-    }
-
-    if (count == 0) return;
-
-    int newTotalLen = length - (count * oldLen) + (count * newLen);
-    char* newData = new char[newTotalLen + 1];
-
-    int srcIdx = 0;
-    int dstIdx = 0;
-    while (srcIdx < length) {
-        // check match
-        bool match = false;
-        if (srcIdx <= length - oldLen) {
-            match = true;
-            for (int j = 0; j < oldLen; j++) {
-                if (data[srcIdx + j] != oldSub[j]) {
+        result.concatenar(newSub);
+        lastIdx = idx + (int)oLen;
+        
+        // Find next manually
+        idx = -1;
+        for (std::size_t i = (std::size_t)lastIdx; i <= length - oLen; i++) {
+            bool match = true;
+            for (std::size_t j = 0; j < oLen; j++) {
+                if (data[i + j] != oldSub[j]) {
                     match = false;
                     break;
                 }
             }
-        }
-
-        if (match) {
-            for (int k = 0; k < newLen; k++) {
-                newData[dstIdx++] = newSub[k];
+            if (match) {
+                idx = (int)i;
+                break;
             }
-            srcIdx += oldLen;
-        } else {
-            newData[dstIdx++] = data[srcIdx++];
         }
     }
-    newData[newTotalLen] = '\0';
-
-    delete[] data;
-    data = newData;
-    length = newTotalLen;
+    // Add rest
+    for (std::size_t i = (std::size_t)lastIdx; i < length; i++) {
+        char temp[2] = {data[i], '\0'};
+        result.concatenar(temp);
+    }
+    
+    *this = std::move(result);
 }
 
-// guardarEnArchivo
+// File I/O
 void String::guardarEnArchivo(const char* filepath) const {
     std::ofstream outFile(filepath);
     if (outFile.is_open()) {
@@ -322,29 +431,35 @@ void String::guardarEnArchivo(const char* filepath) const {
     }
 }
 
-// leerArchivo
 void String::leerArchivo(const char* filepath) {
-    std::ifstream inFile(filepath);
+    std::ifstream inFile(filepath, std::ios::binary | std::ios::ate);
     if (inFile.is_open()) {
-        // Determine file size to allocate buffer?
-        // Or read line by line. "Lee una cadena desde un archivo".
-        // Let's read the whole file content into the string.
-        
-        inFile.seekg(0, std::ios::end);
-        int size = inFile.tellg();
+        std::streamsize size = inFile.tellg();
         inFile.seekg(0, std::ios::beg);
         
-        delete[] data;
-        length = size;
-        data = new char[length + 1];
-        
-        inFile.read(data, length);
-        data[length] = '\0';
-        
+        ensureCapacity((std::size_t)size);
+        if (inFile.read(data, size)) {
+            length = (std::size_t)size;
+            data[length] = '\0';
+        }
         inFile.close();
     }
 }
 
 const char* String::getData() const {
-    return data;
+    return data ? data : "";
+}
+
+// Stream friends
+std::ostream& operator<<(std::ostream& os, const String& str) {
+    os << str.getData();
+    return os;
+}
+
+std::istream& operator>>(std::istream& is, String& str) {
+    char buffer[1024];
+    if (is >> buffer) {
+        str.cambiarCadena(buffer);
+    }
+    return is;
 }

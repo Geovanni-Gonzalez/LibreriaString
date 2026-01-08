@@ -4,14 +4,18 @@
             "C++",
             "OOP",
             "Memory Management",
-            "Operator Overloading"
+            "Move Semantics",
+            "Operator Overloading",
+            "ANSI Colors"
         ],
         "features": [
             "Custom String Manipulation Class",
-            "Advanced Substring Searching",
-            "Dynamic Memory Management",
-            "Operator Overloading for Seamless Integration",
-            "Efficiency Optimized String Operations"
+            "Optimized Capacity Management",
+            "C++11 Move Semantics for High Performance",
+            "Extensive Operator Overloading (+, +=, [], <<, >>)",
+            "Interactive CLI Menu for Real-time Testing",
+            "Colorized Test Suite for better UX",
+            "Advanced Methods: trim, find, startsWith, endsWith"
         ],
         "stack": {
             "language": "C++",
@@ -23,21 +27,25 @@
             "database": "In-memory Data Structure"
         },
         "screenshots": [],
-        "description": "A foundational toolset for C++ developers, this custom string library serves as a lightweight alternative to the standard STL implementation. It emphasizes efficient dynamic memory management and developer productivity through heavy operator overloading, allowing custom string objects to behave as native types. The library includes optimized algorithms for pattern matching, case transformation, and complex parsing, making it an ideal component for memory-constrained environments or educational exploration of C++ object lifecycles."
+        "description": "A high-performance C++ string library that provides a robust alternative to STL's string. It features optimized dynamic memory management with a growth strategy to minimize reallocations, full support for move semantics to handle temporary objects efficiently, and a comprehensive set of overloaded operators for seamless integration. The library now includes an interactive CLI testing interface and color-coded console outputs, significantly improving the developer experience (DX) and usability."
     },
     "es": {
         "tech": [
             "C++",
             "POO",
             "Gestión de Memoria",
-            "Sobrecarga de Operadores"
+            "Semántica de Movimiento",
+            "Sobrecarga de Operadores",
+            "Colores ANSI"
         ],
         "features": [
             "Clase de manipulación de cadenas personalizada",
-            "Búsqueda avanzada de subcadenas",
-            "Gestión dinámica de memoria",
-            "Sobrecarga de operadores para integración fluida",
-            "Operaciones de cadena optimizadas para eficiencia"
+            "Gestión de capacidad optimizada",
+            "Semántica de movimiento C++11 para alto rendimiento",
+            "Sobrecarga de operadores extensiva (+, +=, [], <<, >>)",
+            "Menú CLI interactivo para pruebas en tiempo real",
+            "Suite de pruebas colorida para mejor UX",
+            "Métodos avanzados: trim, find, startsWith, endsWith"
         ],
         "stack": {
             "language": "C++",
@@ -49,6 +57,6 @@
             "database": "Estructura en Memoria"
         },
         "screenshots": [],
-        "description": "Un conjunto de herramientas fundamental para desarrolladores de C++, esta librería de cadenas personalizada sirve como una alternativa ligera a la implementación estándar de la STL. Destaca por su gestión eficiente de memoria dinámica y productividad mediante el uso extensivo de sobrecarga de operadores, permitiendo que los objetos de cadena personalizados se comporten como tipos nativos. La librería incluye algoritmos optimizados para coincidencia de patrones, transformación de mayúsculas/minúsculas y análisis sintáctico complejo, siendo ideal para entornos con restricciones de memoria."
+        "description": "Una librería de cadenas de C++ de alto rendimiento que proporciona una alternativa robusta al string de la STL. Destaca por su gestión optimizada de memoria dinámica con una estrategia de crecimiento que minimiza las reasignaciones, soporte completo para la semántica de movimiento y un conjunto completo de operadores sobrecargados. La librería ahora incluye una interfaz de pruebas CLI interactiva y salidas de consola codificadas por colores, mejorando significativamente la experiencia del desarrollador y la usabilidad."
     }
 }
