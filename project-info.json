@@ -1,30 +1,54 @@
 {
-    "project": "Librería String C++",
-    "tech": [
-        "C++",
-        "OOP",
-        "Algorithm Design"
-    ],
-    "features": [
-        "Custom String Manipulation Class",
-        "Advanced Substring Searching",
-        "Dynamic Memory Management",
-        "Operator Overloading",
-        "Efficiency Optimized String Operations"
-    ],
-    "stack": {
-        "language": "C++",
-        "framework": "Native C++ Lib",
-        "tools": [
-            "G++",
-            "STL-like Implementation",
-            "Git"
+    "en": {
+        "tech": [
+            "C++",
+            "OOP",
+            "Memory Management",
+            "Operator Overloading"
         ],
-        "database": "None (Header-only/Library)"
+        "features": [
+            "Custom String Manipulation Class",
+            "Advanced Substring Searching",
+            "Dynamic Memory Management",
+            "Operator Overloading for Seamless Integration",
+            "Efficiency Optimized String Operations"
+        ],
+        "stack": {
+            "language": "C++",
+            "framework": "Native Header-only Library",
+            "tools": [
+                "G++",
+                "Make"
+            ],
+            "database": "In-memory Data Structure"
+        },
+        "screenshots": [],
+        "description": "A foundational toolset for C++ developers, this custom string library serves as a lightweight alternative to the standard STL implementation. It emphasizes efficient dynamic memory management and developer productivity through heavy operator overloading, allowing custom string objects to behave as native types. The library includes optimized algorithms for pattern matching, case transformation, and complex parsing, making it an ideal component for memory-constrained environments or educational exploration of C++ object lifecycles."
     },
-    "screenshots": [],
-    "description": {
-        "es": "Clase especializada en el lenguaje C++ que permite el manejo avanzado de cadenas de caracteres, optimizada para rendimiento y facilidad de uso.",
-        "en": "Specialized C++ class for advanced string manipulation, optimized for performance and ease of use."
+    "es": {
+        "tech": [
+            "C++",
+            "POO",
+            "Gestión de Memoria",
+            "Sobrecarga de Operadores"
+        ],
+        "features": [
+            "Clase de manipulación de cadenas personalizada",
+            "Búsqueda avanzada de subcadenas",
+            "Gestión dinámica de memoria",
+            "Sobrecarga de operadores para integración fluida",
+            "Operaciones de cadena optimizadas para eficiencia"
+        ],
+        "stack": {
+            "language": "C++",
+            "framework": "Librería Nativa",
+            "tools": [
+                "G++",
+                "Make"
+            ],
+            "database": "Estructura en Memoria"
+        },
+        "screenshots": [],
+        "description": "Un conjunto de herramientas fundamental para desarrolladores de C++, esta librería de cadenas personalizada sirve como una alternativa ligera a la implementación estándar de la STL. Destaca por su gestión eficiente de memoria dinámica y productividad mediante el uso extensivo de sobrecarga de operadores, permitiendo que los objetos de cadena personalizados se comporten como tipos nativos. La librería incluye algoritmos optimizados para coincidencia de patrones, transformación de mayúsculas/minúsculas y análisis sintáctico complejo, siendo ideal para entornos con restricciones de memoria."
     }
 }
